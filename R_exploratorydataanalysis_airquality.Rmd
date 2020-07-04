@@ -1,0 +1,82 @@
+---
+title: "R project 01"
+author: "JN"
+date: "7/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#setwd("D:\Code\R\UdemyRTutorial01")
+library(MASS)
+library(RCurl)
+library(mice)
+library(VIM)
+data()
+
+## Randomly distributed NAs.
+data("airquality")
+??airquality
+str(airquality)
+
+head(airquality)
+summary(airquality)
+
+## Remove rows containing NAs.
+aq=na.omit(airquality)
+head(aq)
+summary(aq)
+str(aq)
+
+## Only retain non-NA rows.
+
+aq2=airquality[complete.cases(airquality), ]
+head(aq2)
+summary(aq2)
+
+## Replace NAs with 0.
+
+aqty=airquality
+aqty[is.na(aqty)]<-0
+head(aqty)
+summary(aqty)
+
+## Replacing missing values with averages.
+
+meanOzone=mean(airquality$Ozone,na.rm=T)
+
+## Remove NAs while computing the mean of the Ozone
+
+aqty.fix=ifelse(is.na(airquality$Ozone),meanOzone,airquality$Ozone)
+
+summary(aqty.fix)
+
+## Visualize the pattern of NAs.
+
+aqty2=airquality
+md.pattern(aqty2)
+
+## Fill observations with no values.
+
+mp<- aggr(aqty2, col=c('navyblue','yellow'),
+           numbers=TRUE, sortVars=TRUE,
+           labels=names(aqty2), dex.axis=.7,
+           gap=3, ylab=c("Missing data", "Pattern"))
+
+## Impute with 500 iterations of predictive mean matching.
+## Predictive mean matching is similar to the regression method but
+## it fills in missing values by drawing real values from the data.
+
+im_aqty<- mice(aqty2, m=5, maxit = 50, method = 'pmm', seed = 500)
+
+summary(im_aqty)
+
+## Values imputed in ozone.
+im_aqty$imp$Ozone
+
+completedData <- complete(im_aqty,1)
+head(completedData)
+```
+
+
+## read in CSV and tex files
